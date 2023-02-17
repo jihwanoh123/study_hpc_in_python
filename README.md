@@ -1,5 +1,5 @@
-# study_hpc_in_python
-Study HPC tools available in Python
+# Study HPC in Python
+Study HPC tools available in Python.
 
 ---
 
