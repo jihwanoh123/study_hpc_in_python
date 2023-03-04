@@ -1,4 +1,3 @@
-#Newly added file
 from mpi4py import MPI
 import numpy as np
 N=1000
