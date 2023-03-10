@@ -47,9 +47,22 @@ class ParserModel(nn.Module):
         self.embed_size = embeddings.shape[1]
         self.hidden_size = hidden_size
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
-
-        ### YOUR CODE HERE (~9-10 Lines)
-        ### TODO:
+        
+        self.embed_to_hidden_weight = nn.Parameter(torch.zeros(n_features,hidden_size))
+        self.embed_to_hidden_bias = nn.Parameter(torch.ones(hidden_size))
+        nn.init.xavier_uniform(self.embed_to_hidden_weight)
+        nn.init.uniform_(self.embed_to_hidden_bias)
+        
+        self.hidden_layer = nn.Linear(n_features,hidden_size)
+       
+        self.dropout=nn.dropout(dropout_prob)
+        
+        self.hidden_to_logits_weight = nn.Parameter(torch.zeros(hidden_size,n_classes))
+        self.hidden_to_logits_bias = nn.Parameter(torch.ones(n_classes))
+        nn.init.xavier_uniform(self.hidden_to_logits_weight)
+        nn.init.uniform_(self.hidden_to_logits_bias)
+        
+        self.output_layer = F.relu(hidden_size,n_classes)
         ###     1) Declare `self.embed_to_hidden_weight` and `self.embed_to_hidden_bias` as `nn.Parameter`.
         ###        Initialize weight with the `nn.init.xavier_uniform_` function and bias with `nn.init.uniform_`
         ###        with default parameters.
@@ -57,36 +70,15 @@ class ParserModel(nn.Module):
         ###     3) Declare `self.hidden_to_logits_weight` and `self.hidden_to_logits_bias` as `nn.Parameter`.
         ###        Initialize weight with the `nn.init.xavier_uniform_` function and bias with `nn.init.uniform_`
         ###        with default parameters.
-        ###
-        ### Note: Trainable variables are declared as `nn.Parameter` which is a commonly used API
-        ###       to include a tensor into a computational graph to support updating w.r.t its gradient.
-        ###       Here, we use Xavier Uniform Initialization for our Weight initialization.
-        ###       It has been shown empirically, that this provides better initial weights
-        ###       for training networks than random uniform initialization.
-        ###       For more details checkout this great blogpost:
-        ###             http://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization
-        ###
-        ### Please see the following docs for support:
-        ###     nn.Parameter: https://pytorch.org/docs/stable/nn.html#parameters
-        ###     Initialization: https://pytorch.org/docs/stable/nn.init.html
-        ###     Dropout: https://pytorch.org/docs/stable/nn.html#dropout-layers
-        ### 
-        ### See the PDF for hints.
-
-
-
-
-        ### END YOUR CODE
 
     def embedding_lookup(self, w):
-        """ Utilize `w` to select embeddings from embedding matrix `self.embeddings`
+        """ Utilize `w` to select embeddings from embedding matrix `self.embeddings` (num_words, embedding_size)
             @param w (Tensor): input tensor of word indices (batch_size, n_features)
-
             @return x (Tensor): tensor of embeddings for words represented in w
                                 (batch_size, n_features * embed_size)
         """
-
-        ### YOUR CODE HERE (~1-4 Lines)
+        x=torch.tensor([[self.embeddings[w[j][i]] for i in range(w.shape[1])] for j in range(w.shape[0])])
+        x.view(w.shape[0],self.n_features*self.embed_size)
         ### TODO:
         ###     1) For each index `i` in `w`, select `i`th vector from self.embeddings
         ###     2) Reshape the tensor using `view` function if necessary
@@ -105,11 +97,6 @@ class ParserModel(nn.Module):
         ###     Index select: https://pytorch.org/docs/stable/torch.html#torch.index_select
         ###     Gather: https://pytorch.org/docs/stable/torch.html#torch.gather
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
-        ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
-
-
-
-        ### END YOUR CODE
         return x
 
 
@@ -132,14 +119,15 @@ class ParserModel(nn.Module):
         @return logits (Tensor): tensor of predictions (output after applying the layers of the network)
                                  without applying softmax (batch_size, n_classes)
         """
+        in_size,features=w.size()
+        x = self.embedding_lookup(w)
+        layer1 = self.hidden_layer(x)
+        layer2 = self.dropout(layer1)
+        logits = self.output_layer(layer2)
         ### YOUR CODE HERE (~3-5 lines)
         ### TODO:
         ###     Complete the forward computation as described in write-up. In addition, include a dropout layer
         ###     as decleared in `__init__` after ReLU function.
-        ###
-        ### Note: We do not apply the softmax to the logits here, because
-        ### the loss function (torch.nn.CrossEntropyLoss) applies it more efficiently.
-        ###
         ### Please see the following docs for support:
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
