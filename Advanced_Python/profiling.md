@@ -3,6 +3,8 @@ Sometimes we want to profile CPU time usage and RAM memory usage. There are mult
 
 * cProfile: https://docs.python.org/3/library/profile.html
 * Scalene: https://pypi.org/project/scalene/
+  * Threads도 정확한 profiling 가능
+  * Multiprocessing을 지원하는 유일한 패키지
 
 # YouTube links
 * Profiling and optimizing your Python code | Python tricks
