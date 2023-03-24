@@ -10,5 +10,5 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check"
-          src: "."
+          src: "./logging_practice"
           jupyter: false
