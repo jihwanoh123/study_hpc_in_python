@@ -1,2 +1,2 @@
-# Stanford PHYS 366 Course HW
-PHYS 366: Statistical Methods in Astrophysics
+# Stanford CS 224N Course HW
+CS 366: Natural Language Processing with Deep Learning
